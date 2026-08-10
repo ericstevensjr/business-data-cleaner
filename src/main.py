@@ -27,6 +27,9 @@ def remove_duplicates(customers):
 		subset=["name", "email", "phone", "amount"]
 	)
 
+def export_customers(customers, filepath):
+	customers.to_excel(filepath, index=False)
+
 def main():
 	customers = load_customers("data/customers.csv")
 	customers = normalize_names(customers)
@@ -34,8 +37,9 @@ def main():
 	customers = normalize_phones(customers)
 	customers = remove_duplicates(customers)
 
-	print(customers)
-	print(customers.shape)
+	export_customers(customers, "output/clean_customers.xlsx")
+
+	print(f"Cleaned {len(customers)} customer records.")
 
 if __name__ == "__main__":
 	main()
