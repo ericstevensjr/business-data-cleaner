@@ -30,6 +30,16 @@ def remove_duplicates(customers):
 def export_customers(customers, filepath):
 	customers.to_excel(filepath, index=False)
 
+def generate_summary(customers):
+	return {
+		"total_customers": int(len(customers)),
+		"total_revenue": float(customers["amount"].sum()),
+		"average_revenue": float(customers["amount"].mean()),
+		"missing_emails": int(
+			(customers["email"] == "missing").sum()
+		),
+	}
+
 def main():
 	customers = load_customers("data/customers.csv")
 	customers = normalize_names(customers)
@@ -39,7 +49,12 @@ def main():
 
 	export_customers(customers, "output/clean_customers.xlsx")
 
+	summary = generate_summary(customers)
+
 	print(f"Cleaned {len(customers)} customer records.")
+	print(f"Total Revenue: ${summary['total_customers']:.2f}")
+	print(f"Average revenue: ${summary['average_revenue']:.2f}")
+	print(f"Missing emails: {summary['missing_emails']}")
 
 if __name__ == "__main__":
 	main()

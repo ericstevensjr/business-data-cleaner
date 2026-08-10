@@ -69,3 +69,23 @@ def test_export_customers(tmp_path):
 	export_customers(df, output_file)
 
 	assert output_file.exists()
+
+def test_generate_summary():
+	df = pd.DataFrame(
+		{
+			"name": ["John Smith", "Jane Doe"],
+			"email": ["john@example.com", "missing"],
+			"phone": ["9045551234", "9055557876"],
+			"amount": [100.0, 200.0],
+		}
+
+	)
+	
+	from src.main import generate_summary
+
+	result = generate_summary(df)
+
+	assert result["total_customers"] == 2
+	assert result["total_revenue"] == 300.0
+	assert result["average_revenue"] == 150.0
+	assert result["missing_emails"] == 1
