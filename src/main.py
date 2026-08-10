@@ -1,18 +1,41 @@
 import pandas as pd
 
-customers = pd.read_csv("data/customers.csv")
+def load_customers(filepath):
+	return pd.read_csv(filepath)
 
-customers["name"] = customers["name"].str.strip().str.title()
-customers["email"] = customers["email"].str.strip().str.lower()
+def normalize_names(customers):
+	customers["name"] = customers["name"].str.strip().str.title()
+	return customers
 
-customers["phone"] = customers["phone"].str.replace(
-	r"\D", "", regex=True
-)
+def normalize_emails(customers):
+	customers["email"] = (
+		customers["email"]
+		.fillna("missing")
+		.str.strip()
+		.str.lower()
+	)
+	return customers
 
-customers = customers.drop_duplicates(
-	subset=["name", "email", "phone", "amount"]
-)
+def normalize_phones(customers):
+	customers["phone"] = customers["phone"].str.replace(
+		r"\D", "", regex=True
+	)
+	return customers
 
-customers["email"] = customers["email"].fillna("missing")
+def remove_duplicates(customers):
+	return customers.drop_duplicates(
+		subset=["name", "email", "phone", "amount"]
+	)
 
-print(customers)
+def main():
+	customers = load_customers("data/customers.csv")
+	customers = normalize_names(customers)
+	customers = normalize_emails(customers)
+	customers = normalize_phones(customers)
+	customers = remove_duplicates(customers)
+
+	print(customers)
+	print(customers.shape)
+
+if __name__ == "__main__":
+	main()
