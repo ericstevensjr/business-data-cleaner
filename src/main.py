@@ -1,8 +1,16 @@
+import logging
 import argparse
 import sys
 import pandas as pd
 
 REQUIRED_COLUMNS = {"name", "email", "phone", "amount"}
+
+logging.basicConfig(
+	level=logging.INFO,
+	format="%(levelname)s: %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 def load_customers(filepath):
 	return pd.read_csv(filepath)
@@ -24,6 +32,14 @@ def normalize_phones(customers):
 	customers["phone"] = customers["phone"].str.replace(
 		r"\D", "", regex=True
 	)
+	return customers
+
+def normalize_amounts(customers):
+	customers["amount"] = pd.to_numeric(
+		customers["amount"],
+		errors="coerce",
+	)
+
 	return customers
 
 def remove_duplicates(customers):
@@ -51,6 +67,14 @@ def validate_columns(customers):
 		missing = ", ".join(sorted(missing_columns))
 		raise ValueError(f"Missing required columns: {missing}")
 
+def validate_amounts(customers):
+	invalid_count = customers["amount"].isna().sum()
+	
+	if invalid_count:
+		raise ValueError(
+			f"Found {invalid_count} invalid amount value(s)"
+		)
+
 def parse_args():
 	parser = argparse.ArgumentParser(
 		description="Clean customer data and export an Excel report."
@@ -74,15 +98,28 @@ def run():
 	args = parse_args()
 	
 	try:
+		logger.info(
+			"Loading customer data from %s",
+			args.input_file,
+		)
+
 		customers = load_customers(args.input_file)
 		validate_columns(customers)
 
 		customers = normalize_names(customers)
 		customers = normalize_emails(customers)
 		customers = normalize_phones(customers)
+		customers = normalize_amounts(customers)
+		validate_amounts(customers)
+
 		customers = remove_duplicates(customers)
 
 		export_customers(customers, "output/clean_customers.xlsx")
+
+		logger.info(
+			"Exported cleaned data to %s",
+			args.output,
+		)
 
 		summary = generate_summary(customers)
 

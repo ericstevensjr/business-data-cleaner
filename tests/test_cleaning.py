@@ -5,6 +5,8 @@ from src.main import (
 	normalize_names,
 	normalize_emails,
 	normalize_phones,
+	normalize_amounts,
+	validate_amounts,
 	remove_duplicates,
 )
 
@@ -38,6 +40,17 @@ def test_normalize_phones():
 		"9045551234",
 		"9045559876",
 	]
+
+def test_normalize_amounts():
+	df = pd.DataFrame(
+		{
+			"amount": ["100.50", "200"]
+		}
+	)
+
+	result = normalize_amounts(df)
+	
+	assert result["amount"].tolist() == [100.50, 200.0]
 
 def test_remove_duplicates():
 	df = pd.DataFrame(
@@ -104,3 +117,13 @@ def test_validate_columns_raises_for_missing_column():
 
 	with pytest.raises(ValueError, match="phone"):
 		validate_columns(df)
+
+def test_validate_amounts_raises_for_invalid_amount():
+	df = pd.DataFrame(
+		{
+			"amount": [100.0, None]
+		}
+	)
+	
+	with pytest.raises(ValueError, match="1 invalid amount"):
+		validate_amounts(df)
