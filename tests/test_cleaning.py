@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from src.main import (
 	normalize_names,
@@ -89,3 +90,17 @@ def test_generate_summary():
 	assert result["total_revenue"] == 300.0
 	assert result["average_revenue"] == 150.0
 	assert result["missing_emails"] == 1
+
+def test_validate_columns_raises_for_missing_column():
+	df = pd.DataFrame(
+		{
+			"name": ["John Smith"],
+			"email": ["john@example.com"],
+			"amount": [100.0],
+		}
+	)
+
+	from src.main import validate_columns
+
+	with pytest.raises(ValueError, match="phone"):
+		validate_columns(df)

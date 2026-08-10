@@ -1,5 +1,7 @@
 import pandas as pd
 
+REQUIRED_COLUMNS = {"name", "email", "phone", "amount"}
+
 def load_customers(filepath):
 	return pd.read_csv(filepath)
 
@@ -40,8 +42,17 @@ def generate_summary(customers):
 		),
 	}
 
+def validate_columns(customers):
+	missing_columns = REQUIRED_COLUMNS - set(customers.columns)
+	
+	if missing_columns:
+		missing = ", ".join(sorted(missing_columns))
+		raise ValueError(f"Missing required columns: {missing}")
+
 def main():
 	customers = load_customers("data/customers.csv")
+	validate_columns(customers)
+
 	customers = normalize_names(customers)
 	customers = normalize_emails(customers)
 	customers = normalize_phones(customers)
