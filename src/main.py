@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 
 REQUIRED_COLUMNS = {"name", "email", "phone", "amount"}
@@ -49,7 +50,28 @@ def validate_columns(customers):
 		missing = ", ".join(sorted(missing_columns))
 		raise ValueError(f"Missing required columns: {missing}")
 
+def parse_args():
+	parser = argparse.ArgumentParser(
+		description="Clean customer data and export an Excel report."
+	)
+	
+	parser.add_argument(
+		"input_file",
+		help="path to the input CSV file",
+	)
+
+	parser.add_argument(
+		"-o",
+		"--output",
+		default="output/clean_customers.xlsx",
+		help="Path for the cleaned Excel output",
+	)
+
+	return parser.parse_args()
+
 def main():
+	args = parse_args()
+
 	customers = load_customers("data/customers.csv")
 	validate_columns(customers)
 
@@ -66,6 +88,7 @@ def main():
 	print(f"Total Revenue: ${summary['total_customers']:.2f}")
 	print(f"Average revenue: ${summary['average_revenue']:.2f}")
 	print(f"Missing emails: {summary['missing_emails']}")
+	print(f"Output written to: {args.output}")
 
 if __name__ == "__main__":
 	main()
