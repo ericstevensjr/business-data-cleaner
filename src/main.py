@@ -1,4 +1,5 @@
 import argparse
+import sys
 import pandas as pd
 
 REQUIRED_COLUMNS = {"name", "email", "phone", "amount"}
@@ -69,26 +70,51 @@ def parse_args():
 
 	return parser.parse_args()
 
-def main():
+def run():
 	args = parse_args()
+	
+	try:
+		customers = load_customers(args.input_file)
+		validate_columns(customers)
 
-	customers = load_customers("data/customers.csv")
-	validate_columns(customers)
+		customers = normalize_names(customers)
+		customers = normalize_emails(customers)
+		customers = normalize_phones(customers)
+		customers = remove_duplicates(customers)
 
-	customers = normalize_names(customers)
-	customers = normalize_emails(customers)
-	customers = normalize_phones(customers)
-	customers = remove_duplicates(customers)
+		export_customers(customers, "output/clean_customers.xlsx")
 
-	export_customers(customers, "output/clean_customers.xlsx")
+		summary = generate_summary(customers)
 
-	summary = generate_summary(customers)
+		print(f"Cleaned {len(customers)} customer records.")
+		print(f"Total Revenue: ${summary['total_customers']:.2f}")
+		print(f"Average revenue: ${summary['average_revenue']:.2f}")
+		print(f"Missing emails: {summary['missing_emails']}")
+		print(f"Output written to: {args.output}")
+	
+	except FileNotFoundError:
+		print(
+			f"Error: input file not found: {args.input_file}",
+			file=sys.stderr,
+		)
+		return 1
 
-	print(f"Cleaned {len(customers)} customer records.")
-	print(f"Total Revenue: ${summary['total_customers']:.2f}")
-	print(f"Average revenue: ${summary['average_revenue']:.2f}")
-	print(f"Missing emails: {summary['missing_emails']}")
-	print(f"Output written to: {args.output}")
+	except pd.errors.EmptyDataError:
+		print(
+			"Error: input CSV is empty.",
+			file=sys.stderr,
+		)
+		return 1
+	except ValueError as exc:
+		print(f"error: {exc}", file=sys.stderr)
+		return 1
+
+	except OSError as exc:
+		print(f"Error writing output file: {exc}", file=sys.stderr)
+		return 1
+
+	return 0
+
 
 if __name__ == "__main__":
-	main()
+	raise SystemExit(run())
