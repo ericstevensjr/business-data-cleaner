@@ -1,0 +1,5 @@
+name,email,phone,amount
+John Smith,JOHN@example.com,904-555-1234,125.50
+john smith, john@example.com,(904) 555-1234,125.50
+Jane Doe, JANE@example.com,9045551234,200
+Mike Brown,,904-555-1111,75
